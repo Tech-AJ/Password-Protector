@@ -5,11 +5,14 @@ import android.content.Intent;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.CancellationSignal;
+import android.os.CountDownTimer;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.TextView;
 
+import static android.hardware.fingerprint.FingerprintManager.FINGERPRINT_ERROR_CANCELED;
+import static android.hardware.fingerprint.FingerprintManager.FINGERPRINT_ERROR_LOCKOUT;
 import static android.support.v4.content.ContextCompat.startActivity;
 
 public class FingerprintHandler extends FingerprintManager.AuthenticationCallback {
@@ -17,14 +20,14 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     private TextView tv;
     private Intent intent;
     private Context context;
-    private int count;
 
-    public FingerprintHandler(TextView tv,Intent intent,Context context) {
+
+    FingerprintHandler(TextView tv, Intent intent, Context context) {
 
         this.tv = tv;
-       this.context=context;
-        this.intent=intent;
-        count=0;
+        this.context = context;
+        this.intent = intent;
+
 
     }
 
@@ -35,7 +38,23 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
         super.onAuthenticationError(errorCode, errString);
 
         tv.setText("Auth error");
-        Log.e("AJ","Auth error");
+        Log.e("AJ", "Auth error" + errorCode);
+        if (errorCode == FINGERPRINT_ERROR_LOCKOUT) {
+            CountDownTimer countDownTimer = new CountDownTimer(30000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    tv.setText("App locked due to 5 failed attempts. Please try after " + millisUntilFinished / 1000 + " sec.");
+                }
+
+                @Override
+                public void onFinish() {
+                    tv.setText("The operation was canceled due to security reasons !!! Try closing app and restarting it ");
+                }
+            }.start();
+
+
+        } else if (errorCode == FINGERPRINT_ERROR_CANCELED)
+            tv.setText("The operation was canceled due to security reasons !!! This might happen if the device was recently locked and unlocked .Try closing app and restarting it ");
 
     }
 
@@ -44,7 +63,8 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
 
         super.onAuthenticationHelp(helpCode, helpString);
-        Log.e("AJ","Auth help");
+        Log.e("AJ", "Auth help");
+
 
     }
 
@@ -54,12 +74,10 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
         super.onAuthenticationSucceeded(result);
 
-        tv.setText("auth ok");
-        Log.e("AJ","Auth ok");
-        startActivity(context,intent,null);
+       // tv.setText("Fingerprint Matched successfully.");
+        Log.e("AJ", "Auth ok");
+        startActivity(context, intent, null);
 
-
-      //  tv.setTextColor(tv.getContext().getResources().getColor(android.R.color.holo_green_light));
 
     }
 
@@ -69,20 +87,8 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
         super.onAuthenticationFailed();
         tv.setText("auth failed");
-        Log.e("AJ","Auth failed");
-        count++;
-        if(count>=3){
-            Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
-            // Vibrate for 500 milliseconds
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE));
-            }else{
-                //deprecated in API 26
-                v.vibrate(3000);
-            }
+        Log.e("AJ", "Auth failed");
 
-
-        }
 
     }
 
@@ -96,9 +102,8 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
             manager.authenticate(obj, signal, 0, this, null);
             tv.setTextColor(tv.getContext().getResources().getColor(android.R.color.holo_green_light));
+        } catch (SecurityException sce) {
         }
-
-        catch(SecurityException sce) {}
 
     }
 
