@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -23,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.techaj.apoorvajain.protectpassword.DB.DatabaseHelper;
@@ -40,24 +42,39 @@ import java.util.Objects;
 public class PasswordDetailFragment extends Fragment {
     TextInputEditText etTitle, etUserName, etPassword, etNotes;
     TextInputLayout eTLayoutTitle;
+    TextView tvLastUpdated;
     long position = -1;
     DatabaseHelper databaseHelper;
     Button btSave, btUpdate, btDelete;
     LinearLayout llSave, llUpdate;
-    ImageButton imgBtnCopyToClipboard;
+    ImageButton imgBtnCopyToClipboard,imgBtnCopyToClipboard1;
     AESCrypt aesCrypt;
+    String masterPassword;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState == null) {
-            // Get back arguments
+        masterPassword = AESCrypt.getIV();
+        // Get back arguments
             if (getArguments() != null) {
-                position = getArguments().getLong("position", -1);
+                position = getArguments().getLong("position", (long)-1);
+             //   masterPassword=getArguments().getString("masterPassword","");
             }
-        }
+            //Log.e("AJ","MasterPwd "+getContext()+masterPassword);
+
+
     }
+
+    public static PasswordDetailFragment newInstance(long position) {
+        PasswordDetailFragment passwordDetailFragment = new PasswordDetailFragment();
+        Bundle args = new Bundle();
+        //  args.putString("masterPassword", masterPassword);
+        args.putLong("position", position);
+        passwordDetailFragment.setArguments(args);
+        return passwordDetailFragment;
+    }
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle savedInstanceState) {
@@ -78,23 +95,31 @@ public class PasswordDetailFragment extends Fragment {
         btUpdate = view.findViewById(R.id.bt_update);
         llSave = view.findViewById(R.id.ll_save);
         llUpdate = view.findViewById(R.id.ll_update);
-        imgBtnCopyToClipboard=view.findViewById(R.id.img_btn_clipboard);
-
+        imgBtnCopyToClipboard = view.findViewById(R.id.img_btn_clipboard);
+        imgBtnCopyToClipboard1 = view.findViewById(R.id.img_btn_clipboard1);
+        tvLastUpdated=view.findViewById(R.id.tv_last_updated);
         databaseHelper = new DatabaseHelper(getContext());
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            FloatingActionButton fab = Objects.requireNonNull(getActivity()).findViewById(R.id.fab);
+            fab.setVisibility(View.GONE);
+        }
         try {
-            aesCrypt=new AESCrypt();
+
+            aesCrypt = AESCrypt.getInstance();
         } catch (KeyStoreException | InvalidAlgorithmParameterException | NoSuchProviderException | IOException | NoSuchAlgorithmException | CertificateException e) {
             e.printStackTrace();
-            Log.e("AJ","error initializing AESCrupt"+e);
+            Log.e("AJ", "error initializing AESCrupt" + e);
         }
+
 
         updateView(position);
         onSaveButtonClickListener();
         onUpdateButtonClickListener();
         onDeleteButtonClickListener();
         clearBackStackExceptOne();
-        copyToClipboard();
-        //  onTitleTextChangeListener();
+        copyToClipboard(imgBtnCopyToClipboard,etPassword);
+        copyToClipboard(imgBtnCopyToClipboard1,etUserName);
+
 
     }
 
@@ -112,13 +137,14 @@ public class PasswordDetailFragment extends Fragment {
             llSave.setVisibility(View.GONE);
             etTitle.setText(databaseHelper.getData(position).getTitle());
             etNotes.setText(databaseHelper.getData(position).getNotes());
+            tvLastUpdated.setText("Last Updated "+databaseHelper.getData(position).getLastUpdated());
 
 
             try {
-                etPassword.setText(aesCrypt.decrypt(databaseHelper.getData(position).getPassword()+"",getContext()));
+                etPassword.setText(aesCrypt.decrypt(databaseHelper.getData(position).getPassword() + "", getContext()));
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e("AJ","error decrypting"+e);
+                Log.e("AJ", "error decrypting" + e);
 
             }
             etUserName.setText(databaseHelper.getData(position).getUserName());
@@ -138,10 +164,10 @@ public class PasswordDetailFragment extends Fragment {
                     data.setUserName(etUserName.getText().toString());
 
                     try {
-                        data.setPassword(aesCrypt.encrypt(etPassword.getText().toString(),getContext()));
+                        data.setPassword(aesCrypt.encrypt(etPassword.getText().toString(), getContext()));
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Log.e("AJ","error encrypting"+e);
+                        Log.e("AJ", "error encrypting" + e);
                     }
                     data.setNotes(etNotes.getText().toString());
 
@@ -188,12 +214,12 @@ public class PasswordDetailFragment extends Fragment {
                 PasswordData data = new PasswordData();
                 data.setTitle(etTitle.getText().toString());
                 data.setUserName(etUserName.getText().toString());
-              //  data.setPassword(etPassword.getText().toString());
+                //  data.setPassword(etPassword.getText().toString());
                 try {
-                    data.setPassword(aesCrypt.encrypt(etPassword.getText().toString(),getContext()));
+                    data.setPassword(aesCrypt.encrypt(etPassword.getText().toString(), getContext()));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Log.e("AJ","error encrypting"+e);
+                    Log.e("AJ", "error encrypting" + e);
                 }
                 data.setNotes(etNotes.getText().toString());
 
@@ -252,21 +278,21 @@ public class PasswordDetailFragment extends Fragment {
         }
     }
 
-    private void copyToClipboard(){
+    private void copyToClipboard(ImageButton imageButton, final TextInputEditText textInputEditText) {
 
-        imgBtnCopyToClipboard.setOnClickListener(new View.OnClickListener() {
+        imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!etPassword.getText().toString().equals("")){
-                ClipboardManager clipboard = (ClipboardManager)
-                        Objects.requireNonNull(getContext()).getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("pwd", etPassword.getText().toString());
-                assert clipboard != null;
-                clipboard.setPrimaryClip(clip);
-                Snackbar.make(Objects.requireNonNull(getView()),"Copied to Clipboard",Snackbar.LENGTH_SHORT).show();
+                if (!textInputEditText.getText().toString().equals("")) {
+                    ClipboardManager clipboard = (ClipboardManager)
+                            Objects.requireNonNull(getContext()).getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("pwd", textInputEditText.getText().toString());
+                    assert clipboard != null;
+                    clipboard.setPrimaryClip(clip);
+                    Snackbar.make(Objects.requireNonNull(getView()), "Copied to Clipboard", Snackbar.LENGTH_SHORT).show();
 
-            }else
-                    Snackbar.make(Objects.requireNonNull(getView()),"Nothing to Copy",Snackbar.LENGTH_SHORT).show();
+                } else
+                    Snackbar.make(Objects.requireNonNull(getView()), "Nothing to Copy", Snackbar.LENGTH_SHORT).show();
 
             }
         });

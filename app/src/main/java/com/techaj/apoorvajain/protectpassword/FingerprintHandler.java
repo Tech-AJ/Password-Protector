@@ -37,7 +37,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
         super.onAuthenticationError(errorCode, errString);
 
-        tv.setText("Auth error");
+
         Log.e("AJ", "Auth error" + errorCode);
         if (errorCode == FINGERPRINT_ERROR_LOCKOUT) {
             CountDownTimer countDownTimer = new CountDownTimer(30000, 1000) {
@@ -74,7 +74,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
         super.onAuthenticationSucceeded(result);
 
-       // tv.setText("Fingerprint Matched successfully.");
+        // tv.setText("Fingerprint Matched successfully.");
         Log.e("AJ", "Auth ok");
         startActivity(context, intent, null);
 
@@ -86,7 +86,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     public void onAuthenticationFailed() {
 
         super.onAuthenticationFailed();
-        tv.setText("auth failed");
+        tv.setText("Figerprint not identified !!!");
         Log.e("AJ", "Auth failed");
 
 
@@ -101,8 +101,9 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
         try {
 
             manager.authenticate(obj, signal, 0, this, null);
-            tv.setTextColor(tv.getContext().getResources().getColor(android.R.color.holo_green_light));
+            tv.setTextColor(tv.getContext().getResources().getColor(android.R.color.white));
         } catch (SecurityException sce) {
+            sce.printStackTrace();
         }
 
     }

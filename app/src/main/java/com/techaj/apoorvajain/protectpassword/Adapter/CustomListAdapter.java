@@ -26,7 +26,7 @@ import java.util.List;
 public class CustomListAdapter extends ArrayAdapter<PasswordData> {
     int mLayoutID;
     private Context mContext;
-    private List<PasswordData> pdList = new ArrayList<PasswordData>();
+    private List<PasswordData> pdList;
     DatabaseHelper databaseHelper = new DatabaseHelper(mContext);
     AESCrypt aesCrypt;
 
@@ -38,7 +38,7 @@ public class CustomListAdapter extends ArrayAdapter<PasswordData> {
         this.pdList = pdList;
         databaseHelper = new DatabaseHelper(mContext);
         try {
-            aesCrypt = new AESCrypt();
+            aesCrypt = AESCrypt.getInstance();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,18 +56,19 @@ public class CustomListAdapter extends ArrayAdapter<PasswordData> {
         // Lookup view for data population
         TextView title = convertView.findViewById(R.id.title);
         TextView password = (TextView) convertView.findViewById(R.id.password);
+        TextView userName = convertView.findViewById(R.id.user_nam);
         TextView lastUpdated = convertView.findViewById(R.id.date);
         // Populate the data into the template view using the data object
         title.setText(data.getTitle());
+        userName.setText(data.getUserName());
         try {
             //  AESCrypt aesCrypt=new AESCrypt();
-            password.setText(aesCrypt.decrypt(databaseHelper.getData(data.getId()).getPassword() + "", getContext()));
+            password.setText(aesCrypt.decrypt(//databaseHelper.getData(data.getId())
+                    data.getPassword() + "", getContext()));
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("AJ", "error decrypting" + e);
-
         }
-        // password.setText(data.getPassword());
+
         lastUpdated.setText(data.getLastUpdated());
         // Return the completed view to render on screen
         return convertView;

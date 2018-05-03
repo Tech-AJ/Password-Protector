@@ -21,17 +21,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "passwordManager";
     private static final String TABLE_NAME = "passwords";
     private static final String COLOUMN_ID = "id";
-    private static final String COLOUMN_TITLE="title";
-    private static final String COLOUMN_USER_NAME="user_name";
-    private static final String COLOUMN_PASSWORD="password";
-    private static final String COLOUMN_NOTES ="notes";
-    private static final String COLOUMN_LAST_UPDATED ="last_updated";
+    private static final String COLOUMN_TITLE = "title";
+    private static final String COLOUMN_USER_NAME = "user_name";
+    private static final String COLOUMN_PASSWORD = "password";
+    private static final String COLOUMN_NOTES = "notes";
+    private static final String COLOUMN_LAST_UPDATED = "last_updated";
+
+    private static final String TABLE_NAME1 = "mstPassword";
+
+    private static final String COLOUMN_IV = "IV";
+    private static final int FIXED_ID = 123456;
 
 
-   // private static
+    // private static
 
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME,null,DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -45,14 +50,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         + COLOUMN_NOTES + " TEXT,"
                         + COLOUMN_LAST_UPDATED + " TEXT"//" DATETIME DEFAULT CURRENT_TIMESTAMP"
                         + ")";
+        String CREATE_TABLE1 = "CREATE TABLE " + TABLE_NAME1 + "("                     // to store master password
+                + COLOUMN_ID + " INTEGER PRIMARY KEY,"
+                + COLOUMN_IV + " TEXT"
+                + ")";
 
         db.execSQL(CREATE_TABLE);
+        db.execSQL(CREATE_TABLE1);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME1);
+
 
         // Create tables again
         onCreate(db);
@@ -63,31 +75,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLOUMN_TITLE,data.getTitle());
-        values.put(COLOUMN_USER_NAME,data.getUserName());
-        values.put(COLOUMN_PASSWORD,data.getPassword());
-        values.put(COLOUMN_NOTES,data.getNotes());
-        values.put(COLOUMN_LAST_UPDATED,getDateTime());
+        values.put(COLOUMN_TITLE, data.getTitle());
+        values.put(COLOUMN_USER_NAME, data.getUserName());
+        values.put(COLOUMN_PASSWORD, data.getPassword());
+        values.put(COLOUMN_NOTES, data.getNotes());
+        values.put(COLOUMN_LAST_UPDATED, getDateTime());
         // insert row
-        long id = db.insert(TABLE_NAME,null,values);
+        long id = db.insert(TABLE_NAME, null, values);
 
         // close db connection
         db.close();
-Log.e("AJ","inserted successfully"+id);
+
         // return newly inserted row id
         return id;
     }
 
-    public PasswordData getData(long id){
+    public PasswordData getData(long id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-String query="SELECT  * FROM " + TABLE_NAME  + " WHERE "+COLOUMN_ID+" = " +id;
-        Cursor cursor=db.rawQuery(query,null);
-       // cursor.moveToFirst();
+        String query = "SELECT  * FROM " + TABLE_NAME + " WHERE " + COLOUMN_ID + " = " + id;
+        Cursor cursor = db.rawQuery(query, null);
+
         PasswordData data = new PasswordData();
-        Log.e("AJ",cursor+" " + id+"");
-        if( cursor != null && cursor.moveToFirst() ) {
-            Log.e("AJ",cursor.getColumnIndex(COLOUMN_ID )+id+"");
+
+        if (cursor != null && cursor.moveToFirst()) {
+            Log.e("AJ", cursor.getColumnIndex(COLOUMN_ID) + id + "");
             data.setId(cursor.getInt(cursor.getColumnIndex(COLOUMN_ID)));
             data.setTitle(cursor.getString(cursor.getColumnIndex(COLOUMN_TITLE)));
             data.setPassword(cursor.getString(cursor.getColumnIndex(COLOUMN_PASSWORD)));
@@ -115,14 +127,15 @@ String query="SELECT  * FROM " + TABLE_NAME  + " WHERE "+COLOUMN_ID+" = " +id;
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-             PasswordData data = new PasswordData();
+                PasswordData data = new PasswordData();
                 data.setId(cursor.getInt(cursor.getColumnIndex(COLOUMN_ID)));
                 data.setTitle(cursor.getString(cursor.getColumnIndex(COLOUMN_TITLE)));
                 data.setPassword(cursor.getString(cursor.getColumnIndex(COLOUMN_PASSWORD)));
                 data.setLastUpdated(cursor.getString(cursor.getColumnIndex(COLOUMN_LAST_UPDATED)));
+                data.setUserName(cursor.getString(cursor.getColumnIndex(COLOUMN_USER_NAME)));
 
 
-              passwordList.add(data);
+                passwordList.add(data);
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -132,31 +145,33 @@ String query="SELECT  * FROM " + TABLE_NAME  + " WHERE "+COLOUMN_ID+" = " +id;
         // return notes list
         return passwordList;
     }
-    public int updateData(PasswordData data){
+
+    public int updateData(PasswordData data) {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLOUMN_TITLE,data.getTitle());
-        values.put(COLOUMN_USER_NAME,data.getUserName());
-        values.put(COLOUMN_PASSWORD,data.getPassword());
-        values.put(COLOUMN_NOTES,data.getNotes());
-        values.put(COLOUMN_LAST_UPDATED,getDateTime());
+        values.put(COLOUMN_TITLE, data.getTitle());
+        values.put(COLOUMN_USER_NAME, data.getUserName());
+        values.put(COLOUMN_PASSWORD, data.getPassword());
+        values.put(COLOUMN_NOTES, data.getNotes());
+        values.put(COLOUMN_LAST_UPDATED, getDateTime());
 
         // updating row
-        int i=
-        db.update(TABLE_NAME, values, COLOUMN_ID + " = ?",
-                new String[]{String.valueOf(data.getId())});
+        int i =
+                db.update(TABLE_NAME, values, COLOUMN_ID + " = ?",
+                        new String[]{String.valueOf(data.getId())});
 
         db.close();
         return i;
 // check if timestamp updates or not
     }
-    public int deleteData(long id){
+
+    public int deleteData(long id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-     int i=   db.delete(TABLE_NAME, COLOUMN_ID + " = ?",
-                new String[]{""+id});
+        int i = db.delete(TABLE_NAME, COLOUMN_ID + " = ?",
+                new String[]{"" + id});
 
         db.close();
         return i;
@@ -164,8 +179,33 @@ String query="SELECT  * FROM " + TABLE_NAME  + " WHERE "+COLOUMN_ID+" = " +id;
 
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+                "dd-MMM-yyyy\nhh:mm a", Locale.getDefault());
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    public void insertIV(String IV) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLOUMN_ID, FIXED_ID);
+        values.put(COLOUMN_IV, IV);
+        db.insert(TABLE_NAME1, null, values);
+
+        // close db connection
+        db.close();
+
+    }
+
+    public String matchIV() {         //get IV
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT  * FROM " + TABLE_NAME1 + " WHERE " + COLOUMN_ID + " = " + FIXED_ID;
+        Cursor cursor = db.rawQuery(query, null);
+        String data = null;
+        if (cursor != null && cursor.moveToFirst()) {
+            data = cursor.getString(cursor.getColumnIndex(COLOUMN_IV));
+        }
+        db.close();
+        return data;
     }
 }

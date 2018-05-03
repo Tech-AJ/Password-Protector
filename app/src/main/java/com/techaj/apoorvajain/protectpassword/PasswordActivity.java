@@ -13,7 +13,7 @@ import android.widget.Toast;
 import com.techaj.apoorvajain.protectpassword.DB.DatabaseHelper;
 
 public class PasswordActivity extends AppCompatActivity implements
-        PasswordListFragment.OnPasswordSelectedListener {
+        PasswordListFragment.OnPasswordSelectedListener , MasterPasswordFragment.OnCorrectPasswordEnteredListener {
 
     DatabaseHelper databaseHelper;
     Fragment fragPassList, fragPassDetail;
@@ -27,13 +27,13 @@ public class PasswordActivity extends AppCompatActivity implements
 
         if (savedInstanceState == null) {
             // Instance of first fragment
-            PasswordListFragment firstFragment = new PasswordListFragment();
+            MasterPasswordFragment masterPasswordFragment= new MasterPasswordFragment();
             // Add Fragment to FrameLayout (flContainer), using FragmentManager
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();// begin  FragmentTransaction
-            ft.add(R.id.fl_container, firstFragment);                                // add    Fragment
-            ft.commit();                                                            // commit FragmentTransaction
+            ft.add(R.id.fl_container, masterPasswordFragment);                                // add    Fragment
+            ft.commit();// commit FragmentTransaction
         }
-        fabClickListener();
+
 
 
      /*   if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
@@ -62,6 +62,7 @@ public class PasswordActivity extends AppCompatActivity implements
                 PasswordDetailFragment secondFragment = new PasswordDetailFragment();
                 Bundle args = new Bundle();
                 args.putInt("position", -1);
+
                 secondFragment.setArguments(args);
 
 
@@ -88,13 +89,11 @@ public class PasswordActivity extends AppCompatActivity implements
 
 
     @Override
-    public void onPasswordSelected(long position) {
+    public void onPasswordSelected(long position,String masterPassword) {
         //Toast.makeText(this, "Called By Fragment A: position - "+ , Toast.LENGTH_SHORT).show();
 
-        PasswordDetailFragment secondFragment = new PasswordDetailFragment();
-        Bundle args = new Bundle();
-        args.putLong("position", position);
-        secondFragment.setArguments(args);
+        PasswordDetailFragment secondFragment = PasswordDetailFragment.newInstance(position);
+
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             getSupportFragmentManager()
@@ -113,4 +112,14 @@ public class PasswordActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onCorrectPassword() {
+        // Instance of first fragment
+        Fragment firstFragment =  new PasswordListFragment();
+        // Add Fragment to FrameLayout (flContainer), using FragmentManager
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();// begin  FragmentTransaction
+        ft.replace(R.id.fl_container, firstFragment);                                // add    Fragment
+        ft.commit();// commit FragmentTransaction
+        fabClickListener();
+    }
 }

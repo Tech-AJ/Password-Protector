@@ -50,14 +50,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (!fingerprintManager.isHardwareDetected()) {
             /**
-             * An error message will be displayed if the device does not contain the fingerprint hardware.
-             * However if you plan to implement a default authentication method,
-             * you can redirect the user to a default authentication activity from here.
-             * Example:
-             * Intent intent = new Intent(this, DefaultAuthenticationActivity.class);
-             * startActivity(intent);
+             * implement a default authentication method,
+             * to redirect the user to a default authentication activity from here.
              */
-            textView.setText("Your Device does not have a Fingerprint Sensor");
+            Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
         } else {
             // Checks whether fingerprint permission is set on manifest
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {

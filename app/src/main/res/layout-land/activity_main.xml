@@ -16,31 +16,32 @@
 
 
         <ImageView
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@drawable/ic_fingerprint_black_24dp"
             android:id="@+id/icon"
             android:paddingTop="2dp"
+
             android:layout_marginBottom="30dp"/>
 
 
-    <!--    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/textPrimary"
-            android:textSize="24sp"
-            android:text="@string/title_fingerprint"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"/>
-            -->
+        <!--    <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textPrimary"
+                android:textSize="24sp"
+                android:text="@string/title_fingerprint"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"/>
+                -->
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/textPrimary"
-            android:textSize="16sp"
+            android:textSize="24sp"
             android:textAlignment="center"
             android:gravity="center"
             android:id="@+id/desc"
@@ -54,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/errorText"
-            android:textSize="14sp"
+            android:textSize="20sp"
             android:textAlignment="center"
             android:id="@+id/fingerStatus"
             android:paddingEnd="30dp"
@@ -67,7 +68,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/textPrimaryDark"
-        android:textSize="14sp"
+        android:textSize="20sp"
         android:text="@string/note"
         android:layout_marginLeft="16dp"
         android:textAlignment="center"
