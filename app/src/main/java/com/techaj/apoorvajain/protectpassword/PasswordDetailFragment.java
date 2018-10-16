@@ -132,6 +132,7 @@ public class PasswordDetailFragment extends Fragment {
             etUserName.setText("");
             etPassword.setText("");
             etNotes.setText("");
+            tvLastUpdated.setText("");
         } else {
             llUpdate.setVisibility(View.VISIBLE);
             llSave.setVisibility(View.GONE);
@@ -175,6 +176,7 @@ public class PasswordDetailFragment extends Fragment {
                     databaseHelper.insertData(data);
                     Toast.makeText(getContext(), "Data Saved Successfully !!!", Toast.LENGTH_SHORT).show();
                     updateListInLandscape();
+
                     //  updateListInPortrait();
                 } else
                     Toast.makeText(getContext(), "Title can not be empty", Toast.LENGTH_SHORT).show();
@@ -229,9 +231,11 @@ public class PasswordDetailFragment extends Fragment {
                 if (databaseHelper.updateData(data) == 1)
                     Toast.makeText(getContext(), "Data Updated Successfully !!!", Toast.LENGTH_SHORT).show();
                 else
-                    Toast.makeText(getContext(), "Some error occured !!! Please try again .", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Oops !!! It seems data has alredy been deleted. Else please try again after some time.", Toast.LENGTH_SHORT).show();
                 //  updateListInPortrait();
                 updateListInLandscape();
+
+                  // after delete
 
             }
         });
@@ -239,6 +243,7 @@ public class PasswordDetailFragment extends Fragment {
 
     public void updateListInLandscape() {
         {
+
             PasswordListFragment firstFragment = new PasswordListFragment();
             // Add Fragment to FrameLayout (flContainer), using FragmentManager
             FragmentManager fm = getFragmentManager();
@@ -247,6 +252,9 @@ public class PasswordDetailFragment extends Fragment {
             FragmentTransaction ft = fm.beginTransaction();// begin  FragmentTransaction
             ft.replace(R.id.fl_container, firstFragment);                                // add    Fragment
             ft.commit();
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+                updateView(-1);
+
 
         }
     }

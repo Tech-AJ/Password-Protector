@@ -9,6 +9,7 @@ import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,51 +44,65 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.fingerStatus);
 
+         ActionBar actionBar=(getSupportActionBar());
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
         // Initializing both Android Keyguard Manager and Fingerprint Manager
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
         FingerprintManager fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
 
 
-        if (!fingerprintManager.isHardwareDetected()) {
-            /**
-             * implement a default authentication method,
-             * to redirect the user to a default authentication activity from here.
-             */
-            Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+        if (fingerprintManager != null) {
+            if (!fingerprintManager.isHardwareDetected()) {
+                /**
+                 * implement a default authentication method,
+                 * to redirect the user to a default authentication activity from here.
+                 */
+                Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
+                // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
 
-        } else {
-            // Checks whether fingerprint permission is set on manifest
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-                textView.setText("Fingerprint authentication permission not enabled");
             } else {
-                // Check whether at least one fingerprint is registered
-                if (!fingerprintManager.hasEnrolledFingerprints()) {
-                    textView.setText("Register at least one fingerprint in Settings");
+                // Checks whether fingerprint permission is set on manifest
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                    textView.setText("Fingerprint authentication permission not enabled");
                 } else {
-                    // Checks whether lock screen security is enabled or not
-                    assert keyguardManager != null;
-                    if (!keyguardManager.isKeyguardSecure()) {
-                        textView.setText("Lock screen security not enabled in Settings");
+                    // Check whether at least one fingerprint is registered
+                    if (!fingerprintManager.hasEnrolledFingerprints()) {
+                        textView.setText("Register at least one fingerprint in Settings");
                     } else {
-                        generateKey();
+                        // Checks whether lock screen security is enabled or not
+                        assert keyguardManager != null;
+                        if (!keyguardManager.isKeyguardSecure()) {
+                            textView.setText("Lock screen security not enabled in Settings");
+                        } else {
+                            generateKey();
 
 
-                        if (cipherInit()) {
-                            // Log.e("AJ",""+K);
-                            Log.e("AJ", "" + cipher);
-                            FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
-                            Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK); // to remove login screen on successful login
-                            FingerprintHandler helper = new FingerprintHandler(textView, intent, this);
+                            if (cipherInit()) {
+                                // Log.e("AJ",""+K);
+                                Log.e("AJ", "" + cipher);
+                                FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                                Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
+                                //   intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK); // to remove login screen on successful login
+                                FingerprintHandler helper = new FingerprintHandler(textView, intent, this);
 
-                            helper.doAuth(fingerprintManager, cryptoObject);
+                                helper.doAuth(fingerprintManager, cryptoObject);
 
+                            }
                         }
                     }
                 }
             }
+        }
+        else{
+            Intent intent = new Intent("com.techaj.apoorvajain.protectpassword.PasswordActivity");
+            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
         }
     }
 

@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.techaj.apoorvajain.protectpassword.Model.PasswordData;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -103,7 +105,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             data.setId(cursor.getInt(cursor.getColumnIndex(COLOUMN_ID)));
             data.setTitle(cursor.getString(cursor.getColumnIndex(COLOUMN_TITLE)));
             data.setPassword(cursor.getString(cursor.getColumnIndex(COLOUMN_PASSWORD)));
-            data.setLastUpdated(cursor.getString(cursor.getColumnIndex(COLOUMN_LAST_UPDATED)));
+
+            data.setLastUpdated(
+                    convertDate(cursor.getString(cursor.getColumnIndex(COLOUMN_LAST_UPDATED))));
             data.setUserName(cursor.getString(cursor.getColumnIndex(COLOUMN_USER_NAME)));
             data.setNotes(cursor.getString(cursor.getColumnIndex(COLOUMN_NOTES)));
             cursor.close();
@@ -131,7 +135,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 data.setId(cursor.getInt(cursor.getColumnIndex(COLOUMN_ID)));
                 data.setTitle(cursor.getString(cursor.getColumnIndex(COLOUMN_TITLE)));
                 data.setPassword(cursor.getString(cursor.getColumnIndex(COLOUMN_PASSWORD)));
-                data.setLastUpdated(cursor.getString(cursor.getColumnIndex(COLOUMN_LAST_UPDATED)));
+                data.setLastUpdated(
+                        convertDate
+                        (cursor.getString(cursor.getColumnIndex(COLOUMN_LAST_UPDATED))));
                 data.setUserName(cursor.getString(cursor.getColumnIndex(COLOUMN_USER_NAME)));
 
 
@@ -179,9 +185,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "dd-MMM-yyyy\nhh:mm a", Locale.getDefault());
+            //    "dd-MMM-yyyy\nhh:mm a", Locale.getDefault());
+                 "yyyy-MM-dd\nhh:mm a", Locale.getDefault());
         Date date = new Date();
         return dateFormat.format(date);
+    }
+
+    private String convertDate(String date){
+        DateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd\nhh:mm a", Locale.getDefault());
+        DateFormat targetFormat = new SimpleDateFormat("dd-MMM-yyyy\nhh:mm a");
+
+        Date date1 = null;
+        try {
+            date1 = originalFormat.parse(date);
+            return targetFormat.format(date1);
+        } catch (ParseException e) {
+            e.printStackTrace();
+Log.i("AJ11","catch");
+            return (date);
+        }
+              // changes here
     }
 
     public void insertIV(String IV) {
@@ -205,6 +228,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.moveToFirst()) {
             data = cursor.getString(cursor.getColumnIndex(COLOUMN_IV));
         }
+        assert cursor != null;
+        cursor.close();
         db.close();
         return data;
     }

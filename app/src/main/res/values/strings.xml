@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ProtectPassword</string>
+    <string name="app_name">Password Protector</string>
 
     <string name="title_activity_main">MainActivity</string>
     <string name="title_fingerprint">One-touch Sign In</string>

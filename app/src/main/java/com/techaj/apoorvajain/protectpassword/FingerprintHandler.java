@@ -77,6 +77,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
         // tv.setText("Fingerprint Matched successfully.");
         Log.e("AJ", "Auth ok");
         startActivity(context, intent, null);
+        ((MainActivity)context).finish();
 
 
     }
